@@ -1,16 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Formik, Form } from "formik";
-import TextField from "./common/TextField";
-import FormContainer from "./FormContainer";
-import { RootState, AppDispatch } from "../store/store";
+import TextField from "../common/TextField";
+import FormContainer from "../layout/FormContainer";
+import { RootState, AppDispatch } from "../../store/store";
 import {
   setSkills,
   addSkill,
   removeSkill,
   updateSkillExperience,
-} from "../store/skillsSlice";
-import { skillsSchema } from "../utils/validationSchemas";
+} from "../../store/slice/skillsSlice";
+import { skillsSchema } from "../../utils/validationSchemas";
 
 export interface Skill {
   id: string;

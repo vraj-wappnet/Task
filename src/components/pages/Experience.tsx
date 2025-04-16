@@ -299,18 +299,18 @@
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field } from "formik";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../store/store";
+import { RootState, AppDispatch } from "../../store/store";
 import {
   setExperienceInfo,
   removeExperienceInfo,
-} from "../store/experienceSlice";
-import TextField from "./common/TextField";
-import FormContainer from "./FormContainer";
-import { ExperienceInfo } from "../store/experienceSlice";
+} from "../../store/slice/experienceSlice";
+import TextField from "../common/TextField";
+import FormContainer from "../layout/FormContainer";
+import { ExperienceInfo } from "../../store/slice/experienceSlice";
 import {
   experienceSchema,
   validateDateRange,
-} from "../utils/validationSchemas";
+} from "../../utils/validationSchemas";
 import * as Yup from "yup";
 
 interface FormValues {

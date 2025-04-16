@@ -1,15 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../store/store";
+import { RootState, AppDispatch } from "../../store/store";
 import { Formik, Form } from "formik";
-import TextField from "./common/TextField";
-import FormContainer from "./FormContainer";
+import TextField from "../common/TextField";
+import FormContainer from "../layout/FormContainer";
 import {
   setEducations,
   addEducation,
   removeEducation,
-} from "../store/educationSlice";
-import { educationSchema, validateYearRange } from "../utils/validationSchemas";
+} from "../../store/slice/educationSlice";
+import {
+  educationSchema,
+  validateYearRange,
+} from "../../utils/validationSchemas";
 import * as Yup from "yup";
 
 export interface Education {

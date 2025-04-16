@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { Skill } from "../components/Skills";
+import { Skill } from "../components/pages/Skills";
 
 // Common validation patterns
 const commonValidations = {

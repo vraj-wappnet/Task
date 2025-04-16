@@ -4,16 +4,16 @@ import {
   setReferences,
   setSkipReferences,
   Reference,
-} from "../store/referencesSlice";
-import { RootState, AppDispatch } from "../store/store";
+} from "../../store/slice/referencesSlice";
+import { RootState, AppDispatch } from "../../store/store";
 import { Formik, Form, Field } from "formik";
-import TextField from "./common/TextField";
-import FormContainer from "./FormContainer";
+import TextField from "../common/TextField";
+import FormContainer from "../layout/FormContainer";
 import {
   referencesFormSchema,
   validateEmail,
   validatePhoneNumber,
-} from "../utils/validationSchemas";
+} from "../../utils/validationSchemas";
 
 interface FormValues {
   skipReferences: boolean;

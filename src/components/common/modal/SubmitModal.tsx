@@ -140,11 +140,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { clearPersonalInfo } from "../store/personalInfoSlice";
-import { clearReferences } from "../store/referencesSlice";
-import { clearExperienceInfo } from "../store/experienceSlice";
-import { clearEducations } from "../store/educationSlice";
-import { clearSkills } from "../store/skillsSlice";
+import { clearPersonalInfo } from "../../../store/slice/personalInfoSlice";
+import { clearReferences } from "../../../store/slice/referencesSlice";
+import { clearExperienceInfo } from "../../../store/slice/experienceSlice";
+import { clearEducations } from "../../../store/slice/educationSlice";
+import { clearSkills } from "../../../store/slice/skillsSlice";
 
 interface SubmitModalProps {
   isOpen: boolean;

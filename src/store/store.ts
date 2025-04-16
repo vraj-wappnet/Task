@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import personalInfoReducer from "./personalInfoSlice";
-import referencesReducer from "./referencesSlice";
-import experienceReducer from "./experienceSlice";
-import educationReducer from "./educationSlice";
+import personalInfoReducer from "./slice/personalInfoSlice";
+import referencesReducer from "./slice/referencesSlice";
+import experienceReducer from "./slice/experienceSlice";
+import educationReducer from "./slice/educationSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import skillsReducer from "./skillsSlice";
+import skillsReducer from "./slice/skillsSlice";
 
 const personalInfoPersistConfig = {
   key: "personalInfo",

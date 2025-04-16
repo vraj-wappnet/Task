@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import { RootState } from "../../store/store";
 import { Skill } from "./Skills";
 import { Education } from "./Education";
-import SubmitModal from "./SubmitModal";
-import FormContainer from "./FormContainer";
+import SubmitModal from "../common/modal/SubmitModal";
+import FormContainer from "../layout/FormContainer";
 
 interface Reference {
   id: string;

@@ -1,11 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { type PersonalInfo } from "../store/personalInfoSlice";
-import { setPersonalInfo } from "../store/personalInfoSlice";
-import { RootState } from "../store/store";
+import { type PersonalInfo } from "../../store/slice/personalInfoSlice";
+import { setPersonalInfo } from "../../store/slice/personalInfoSlice";
+import { RootState } from "../../store/store";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import FormContainer from "./FormContainer";
-import { personalInfoSchema } from "../utils/validationSchemas";
+import FormContainer from "../layout/FormContainer";
+import { personalInfoSchema } from "../../utils/validationSchemas";
 
 const PersonalInfo = () => {
   const dispatch = useDispatch();
