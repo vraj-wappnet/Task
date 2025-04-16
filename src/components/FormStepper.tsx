@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const steps = [
@@ -36,9 +36,20 @@ const steps = [
 
 const FormStepper = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentStepIndex = steps.findIndex(
     (step) => step.path === location.pathname
   );
+
+  const handleStepClick = (path: string, index: number) => {
+    // Allow navigation only to completed or current steps
+    if (index <= currentStepIndex) {
+      console.log(`Navigating to step: ${steps[index].label} (${path})`);
+      navigate(path);
+    } else {
+      console.log(`Cannot navigate to future step: ${steps[index].label}`);
+    }
+  };
 
   const getIconForLabel = (label: string) => {
     switch (label) {
@@ -49,6 +60,7 @@ const FormStepper = () => {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -65,6 +77,7 @@ const FormStepper = () => {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -81,6 +94,7 @@ const FormStepper = () => {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path d="M12 14l9-5-9-5-9 5 9 5z" />
             <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
@@ -99,6 +113,7 @@ const FormStepper = () => {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -115,6 +130,7 @@ const FormStepper = () => {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -131,6 +147,7 @@ const FormStepper = () => {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -153,9 +170,16 @@ const FormStepper = () => {
           <div className="font-medium text-gray-700">
             Step {currentStepIndex + 1} of {steps.length}:
           </div>
-          <div className="ml-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+          <button
+            className="ml-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onClick={() =>
+              handleStepClick(steps[currentStepIndex].path, currentStepIndex)
+            }
+            aria-current="step"
+            aria-label={`Go to ${steps[currentStepIndex].label} step`}
+          >
             {steps[currentStepIndex].label}
-          </div>
+          </button>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
           <motion.div
@@ -191,7 +215,7 @@ const FormStepper = () => {
               className="relative flex flex-col items-center group"
             >
               {/* Step Circle */}
-              <motion.div
+              <motion.button
                 initial={{ scale: 0.8 }}
                 animate={{
                   scale: index <= currentStepIndex ? 1 : 0.8,
@@ -201,14 +225,18 @@ const FormStepper = () => {
                       : "none",
                 }}
                 transition={{ duration: 0.3 }}
-                className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-2 transition-all duration-300
-                  ${
-                    index < currentStepIndex
-                      ? "bg-purple-500 border-purple-500 text-white"
-                      : index === currentStepIndex
-                      ? "bg-white border-blue-500 text-blue-500 shadow-md"
-                      : "bg-white border-gray-300 text-gray-400"
-                  }`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center z-10 border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  index < currentStepIndex
+                    ? "bg-purple-500 border-purple-500 text-white hover:bg-purple-600 cursor-pointer"
+                    : index === currentStepIndex
+                    ? "bg-white border-blue-500 text-blue-500 shadow-md hover:bg-blue-50 cursor-pointer"
+                    : "bg-white border-gray-300 text-gray-400 cursor-not-allowed"
+                }`}
+                onClick={() => handleStepClick(step.path, index)}
+                disabled={index > currentStepIndex}
+                aria-current={index === currentStepIndex ? "step" : undefined}
+                aria-label={`Go to ${step.label} step`}
+                aria-disabled={index > currentStepIndex}
               >
                 {index < currentStepIndex ? (
                   <svg
@@ -216,6 +244,7 @@ const FormStepper = () => {
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -227,7 +256,7 @@ const FormStepper = () => {
                 ) : (
                   getIconForLabel(step.label)
                 )}
-              </motion.div>
+              </motion.button>
 
               {/* Label with Status */}
               <div className="absolute -bottom-12 w-36 text-center">
