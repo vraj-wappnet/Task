@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Formik, Form } from "formik";
-import TextField from "../common/TextField";
+import TextField from "../common/inputs/TextField";
 import FormContainer from "../layout/FormContainer";
 import { RootState, AppDispatch } from "../../store/store";
 import {
@@ -53,6 +53,7 @@ const Skills = () => {
   const handleSubmit = (values: FormValues) => {
     dispatch(setSkills(values.skills));
     navigate("/references");
+    window.scrollTo(0, 0);
   };
 
   const handlePrevious = () => {

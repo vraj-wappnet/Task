@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
 import { Formik, Form } from "formik";
-import TextField from "../common/TextField";
+import TextField from "../common/inputs/TextField";
 import FormContainer from "../layout/FormContainer";
 import {
   setEducations,
