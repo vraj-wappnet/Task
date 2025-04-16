@@ -1,390 +1,663 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
+// import { Formik, Form, Field } from "formik";
+// import { useSelector, useDispatch } from "react-redux";
+// import { RootState, AppDispatch } from "../store/store";
+// import {
+//   setExperienceInfo,
+//   removeExperienceInfo,
+// } from "../store/experienceSlice";
+// import TextField from "./common/TextField";
+// import FormContainer from "./FormContainer";
+// import { ExperienceInfo } from "../store/experienceSlice";
+// import { experienceSchema } from "../utils/validationSchemas";
 
-interface Experience {
-  id: string;
-  jobTitle: string;
-  companyName: string;
-  employmentType: string;
-  startDate: string;
-  endDate: string;
-  currentlyWorking: boolean;
-  responsibilities: string;
+// interface FormValues {
+//   experiences: ExperienceInfo[];
+// }
+
+// const Experience = () => {
+//   const navigate = useNavigate();
+//   const dispatch = useDispatch<AppDispatch>();
+//   const experiences = useSelector(
+//     (state: RootState) => state.experience.experiences
+//   );
+
+//   // Initialize Formik with Redux data
+//   const initialValues: FormValues = {
+//     experiences: experiences.length
+//       ? experiences
+//       : [
+//           {
+//             id: Date.now().toString(),
+//             jobTitle: "",
+//             companyName: "",
+//             employmentType: "",
+//             startDate: "",
+//             endDate: "",
+//             currentlyWorking: false,
+//             responsibilities: "",
+//           },
+//         ],
+//   };
+
+//   // Validate dates
+//   const validateDates = (
+//     startDate: string,
+//     endDate: string,
+//     currentlyWorking: boolean
+//   ) => {
+//     if (currentlyWorking) return true;
+//     if (!startDate || !endDate) return false;
+//     return new Date(startDate) <= new Date(endDate);
+//   };
+
+//   const handleSubmit = (values: FormValues) => {
+//     const isValid = values.experiences.every((exp) =>
+//       validateDates(exp.startDate, exp.endDate, exp.currentlyWorking)
+//     );
+
+//     if (isValid) {
+//       // Dispatch each experience to Redux store
+//       values.experiences.forEach((exp) => {
+//         dispatch(setExperienceInfo(exp));
+//       });
+//       navigate("/education");
+//       window.scrollTo(0, 0);
+//     }
+//   };
+
+//   const handlePrevious = () => {
+//     navigate("/");
+//     window.scrollTo(0, 0);
+//   };
+
+//   return (
+//     <FormContainer title="Work Experience">
+//       <Formik
+//         initialValues={initialValues}
+//         validationSchema={experienceSchema}
+//         onSubmit={handleSubmit}
+//         enableReinitialize // Reinitialize form when Redux state changes
+//       >
+//         {({ values, setFieldValue }) => (
+//           <Form className="space-y-8">
+//             {values.experiences.map((exp, index) => (
+//               <div
+//                 key={exp.id}
+//                 className="rounded-lg p-6 space-y-5 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+//               >
+//                 <div className="flex justify-between items-center pb-1">
+//                   <div className="flex items-center">
+//                     <div className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-medium">
+//                       {index + 1}
+//                     </div>
+//                     <h3 className="text-lg font-semibold text-gray-800">
+//                       Work Experience
+//                     </h3>
+//                   </div>
+//                   {values.experiences.length > 1 && (
+//                     <button
+//                       type="button"
+//                       onClick={() => {
+//                         // Dispatch action to remove experience from Redux
+//                         dispatch(removeExperienceInfo(exp.id));
+//                         // Update Formik state
+//                         const newExperiences = values.experiences.filter(
+//                           (e) => e.id !== exp.id
+//                         );
+//                         setFieldValue("experiences", newExperiences);
+//                       }}
+//                       className="text-red-500 hover:text-red-700 flex items-center text-sm font-medium"
+//                     >
+//                       <svg
+//                         xmlns="http://www.w3.org/2000/svg"
+//                         className="h-4 w-4 mr-1"
+//                         fill="none"
+//                         viewBox="0 0 24 24"
+//                         stroke="currentColor"
+//                       >
+//                         <path
+//                           strokeLinecap="round"
+//                           strokeLinejoin="round"
+//                           strokeWidth={2}
+//                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+//                         />
+//                       </svg>
+//                       Remove
+//                     </button>
+//                   )}
+//                 </div>
+
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+//                   <TextField
+//                     name={`experiences.${index}.jobTitle`}
+//                     label="Job Title"
+//                     placeholder="e.g. Software Engineer"
+//                     required
+//                   />
+//                   <TextField
+//                     name={`experiences.${index}.companyName`}
+//                     label="Company Name"
+//                     placeholder="e.g. Google"
+//                     required
+//                   />
+//                 </div>
+
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+//                   <div>
+//                     <label className="block text-sm font-medium text-gray-700 mb-1">
+//                       Employment Type
+//                     </label>
+//                     <Field
+//                       as="select"
+//                       name={`experiences.${index}.employmentType`}
+//                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200"
+//                     >
+//                       <option value="full-time">Full-time</option>
+//                       <option value="part-time">Part-time</option>
+//                       <option value="internship">Internship</option>
+//                       <option value="contract">Contract</option>
+//                       <option value="freelance">Freelance</option>
+//                     </Field>
+//                   </div>
+
+//                   <div className="flex items-center pt-6">
+//                     <Field
+//                       type="checkbox"
+//                       name={`experiences.${index}.currentlyWorking`}
+//                       className="h-5 w-5 text-secondary focus:ring-secondary border-gray-300 rounded"
+//                     />
+//                     <label className="ml-2 text-sm font-medium text-gray-700">
+//                       I currently work here
+//                     </label>
+//                   </div>
+//                 </div>
+
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+//                   <TextField
+//                     name={`experiences.${index}.startDate`}
+//                     label="Start Date"
+//                     type="date"
+//                     required
+//                   />
+//                   <TextField
+//                     name={`experiences.${index}.endDate`}
+//                     label="End Date"
+//                     type="date"
+//                     required={!exp.currentlyWorking}
+//                     disabled={exp.currentlyWorking}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <label className="block text-sm font-medium text-gray-700 mb-1">
+//                     Responsibilities & Achievements
+//                   </label>
+//                   <Field
+//                     as="textarea"
+//                     name={`experiences.${index}.responsibilities`}
+//                     rows={4}
+//                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200"
+//                     placeholder="Describe your key responsibilities, accomplishments, and skills used in this role..."
+//                   />
+//                 </div>
+//               </div>
+//             ))}
+
+//             <button
+//               type="button"
+//               onClick={() => {
+//                 const newExperience = {
+//                   id: Date.now().toString(),
+//                   jobTitle: "",
+//                   companyName: "",
+//                   employmentType: "",
+//                   startDate: "",
+//                   endDate: "",
+//                   currentlyWorking: false,
+//                   responsibilities: "",
+//                 };
+//                 // Dispatch action to add new experience to Redux
+//                 dispatch(setExperienceInfo(newExperience));
+//                 // Update Formik state
+//                 setFieldValue("experiences", [
+//                   ...values.experiences,
+//                   newExperience,
+//                 ]);
+//               }}
+//               className="flex items-center justify-center w-full py-3 px-4 border-2 border-dashed border-secondary text-secondary rounded-lg hover:bg-secondary hover:text-white transition-all duration-300 font-medium"
+//             >
+//               <svg
+//                 xmlns="http://www.w3.org/2000/svg"
+//                 className="h-5 w-5 mr-2"
+//                 fill="none"
+//                 viewBox="0 0 24 24"
+//                 stroke="currentColor"
+//               >
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   strokeWidth={2}
+//                   d="M12 6v12m6-6H6"
+//                 />
+//               </svg>
+//               Add Another Work Experience
+//             </button>
+
+//             <div className="flex justify-between pt-4 mt-0">
+//               <button
+//                 type="button"
+//                 onClick={handlePrevious}
+//                 className="px-5 py-2.5 text-secondary border border-secondary rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
+//               >
+//                 <svg
+//                   xmlns="http://www.w3.org/2000/svg"
+//                   className="h-5 w-5 mr-1"
+//                   fill="none"
+//                   viewBox="0 0 24 24"
+//                   stroke="currentColor"
+//                 >
+//                   <path
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     strokeWidth={2}
+//                     d="M15 19l-7-7 7-7"
+//                   />
+//                 </svg>
+//                 Previous
+//               </button>
+//               <button
+//                 type="submit"
+//                 className="px-6 py-2.5 bg-secondary text-white rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all duration-200 font-medium flex items-center"
+//               >
+//                 Next
+//                 <svg
+//                   xmlns="http://www.w3.org/2000/svg"
+//                   className="h-5 w-5 ml-1"
+//                   fill="none"
+//                   viewBox="0 0 24 24"
+//                   stroke="currentColor"
+//                 >
+//                   <path
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     strokeWidth={2}
+//                     d="M9 5l7 7-7 7"
+//                   />
+//                 </svg>
+//               </button>
+//             </div>
+//           </Form>
+//         )}
+//       </Formik>
+//     </FormContainer>
+//   );
+// };
+
+// export default Experience;
+
+import { useNavigate } from "react-router-dom";
+import { Formik, Form, Field } from "formik";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "../store/store";
+import {
+  setExperienceInfo,
+  removeExperienceInfo,
+} from "../store/experienceSlice";
+import TextField from "./common/TextField";
+import FormContainer from "./FormContainer";
+import { ExperienceInfo } from "../store/experienceSlice";
+import {
+  experienceSchema,
+  validateDateRange,
+} from "../utils/validationSchemas";
+import * as Yup from "yup";
+
+interface FormValues {
+  experiences: ExperienceInfo[];
 }
+
+// Define the form-level validation schema
+const formValidationSchema = Yup.object().shape({
+  experiences: Yup.array()
+    .of(experienceSchema)
+    .min(1, "At least one experience is required"),
+});
 
 const Experience = () => {
   const navigate = useNavigate();
-  const [experiences, setExperiences] = useState<Experience[]>([
-    {
-      id: "1",
-      jobTitle: "",
-      companyName: "",
-      employmentType: "",
-      startDate: "",
-      endDate: "",
-      currentlyWorking: false,
-      responsibilities: "",
-    },
-  ]);
+  const dispatch = useDispatch<AppDispatch>();
+  const experiences = useSelector(
+    (state: RootState) => state.experience.experiences
+  );
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  // Load saved experience data from localStorage
-  useEffect(() => {
-    const savedExperiences = localStorage.getItem("experiences");
-    if (savedExperiences) {
-      setExperiences(JSON.parse(savedExperiences));
-    }
-  }, []);
-
-  const validateDates = (
-    startDate: string,
-    endDate: string,
-    currentlyWorking: boolean
-  ) => {
-    if (currentlyWorking) return true;
-    if (!startDate || !endDate) return false;
-    return new Date(startDate) <= new Date(endDate);
+  // Initialize Formik with Redux data
+  const initialValues: FormValues = {
+    experiences: experiences.length
+      ? experiences
+      : [
+          {
+            id: Date.now().toString(),
+            jobTitle: "",
+            companyName: "",
+            employmentType: "",
+            startDate: "",
+            endDate: "",
+            currentlyWorking: false,
+            responsibilities: "",
+          },
+        ],
   };
 
-  const handleExperienceChange = (
-    id: string,
-    field: keyof Experience,
-    value: string | boolean
-  ) => {
-    setExperiences((prev) =>
-      prev.map((exp) => {
-        if (exp.id === id) {
-          const updatedExp = { ...exp, [field]: value };
+  const handleSubmit = (values: FormValues) => {
+    // Log form values before validation
+    console.log("Submitting Experience Form:", values);
 
-          if (
-            field === "startDate" ||
-            field === "endDate" ||
-            field === "currentlyWorking"
-          ) {
-            const isValid = validateDates(
-              field === "startDate" ? (value as string) : updatedExp.startDate,
-              field === "endDate" ? (value as string) : updatedExp.endDate,
-              field === "currentlyWorking"
-                ? (value as boolean)
-                : updatedExp.currentlyWorking
-            );
-
-            setErrors((prev) => ({
-              ...prev,
-              [`${id}-dates`]: isValid
-                ? ""
-                : "End date must be after start date",
-            }));
-          }
-
-          return updatedExp;
-        }
-        return exp;
-      })
-    );
-  };
-
-  const addExperience = () => {
-    setExperiences((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        jobTitle: "",
-        companyName: "",
-        employmentType: "",
-        startDate: "",
-        endDate: "",
-        currentlyWorking: false,
-        responsibilities: "",
-      },
-    ]);
-  };
-
-  const removeExperience = (id: string) => {
-    setExperiences((prev) => prev.filter((exp) => exp.id !== id));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // check error
-    const newErrors: { [key: string]: string } = {};
-    experiences.forEach((exp) => {
-      if (!exp.jobTitle)
-        newErrors[`${exp.id}-jobTitle`] = "Job title is required";
-      if (!exp.companyName)
-        newErrors[`${exp.id}-companyName`] = "Company name is required";
-      if (!exp.employmentType)
-        newErrors[`${exp.id}-employmentType`] = "Employment type is required";
-      if (!exp.startDate)
-        newErrors[`${exp.id}-startDate`] = "Start date is required";
-      if (!exp.currentlyWorking && !exp.endDate)
-        newErrors[`${exp.id}-endDate`] = "End date is required";
-      if (!validateDates(exp.startDate, exp.endDate, exp.currentlyWorking)) {
-        newErrors[`${exp.id}-dates`] = "End date must be after start date";
+    // Validate date ranges for all experiences
+    const isValid = values.experiences.every((exp, index) => {
+      const isDateValid = validateDateRange(
+        exp.startDate,
+        exp.endDate,
+        exp.currentlyWorking
+      );
+      if (!isDateValid) {
+        console.error(
+          `Validation Error: Experience ${
+            index + 1
+          } has invalid date range: Start: ${exp.startDate}, End: ${
+            exp.endDate
+          }, Currently Working: ${exp.currentlyWorking}`
+        );
       }
+      return isDateValid;
     });
 
-    setErrors(newErrors);
+    // Log validation result
+    console.log("Date Range Validation Result:", isValid ? "Valid" : "Invalid");
 
-    if (Object.keys(newErrors).length === 0) {
-      localStorage.setItem("experiences", JSON.stringify(experiences));
+    if (isValid) {
+      // Dispatch each experience to Redux store
+      values.experiences.forEach((exp, index) => {
+        console.log(`Saving Experience ${index + 1}:`, exp);
+        dispatch(setExperienceInfo(exp));
+      });
+      console.log("Navigating to /education");
       navigate("/education");
+      window.scrollTo(0, 0);
+    } else {
+      console.warn("Form submission blocked due to validation errors");
     }
   };
 
   const handlePrevious = () => {
+    console.log("Navigating to previous page: /");
     navigate("/");
+    window.scrollTo(0, 0);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center text-secondary">
-          Work Experience
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {experiences.map((exp, index) => (
-            <div key={exp.id} className=" rounded-lg p-6 space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">
-                  Experience {index + 1}
-                </h3>
-                {experiences.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeExperience(exp.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
+    <FormContainer title="Work Experience">
+      <Formik
+        initialValues={initialValues}
+        validationSchema={formValidationSchema}
+        onSubmit={handleSubmit}
+        enableReinitialize
+        validateOnChange={true}
+        validateOnBlur={true}
+      >
+        {({ values, setFieldValue, errors, touched, isValid }) => {
+          // Log form values and validation state on render
+          console.log("Current Form Values:", values);
+          console.log("Is Form Valid:", isValid);
+          // Log validation errors when they occur
+          if (
+            Object.keys(errors).length > 0 &&
+            Object.keys(touched).length > 0
+          ) {
+            console.log("Validation Errors:", errors);
+          }
+          // Log touched fields to debug interaction
+          if (Object.keys(touched).length > 0) {
+            console.log("Touched Fields:", touched);
+          }
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Job Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={exp.jobTitle}
-                    onChange={(e) =>
-                      handleExperienceChange(exp.id, "jobTitle", e.target.value)
-                    }
-                    className={`w-full px-4 py-3 rounded-lg border ${
-                      errors[`${exp.id}-jobTitle`]
-                        ? "border-primary"
-                        : "border-gray-300"
-                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
-                    required
-                  />
-                  {errors[`${exp.id}-jobTitle`] && (
-                    <p className="text-primary text-sm mt-1">
-                      {errors[`${exp.id}-jobTitle`]}
-                    </p>
-                  )}
-                </div>
+          return (
+            <Form className="space-y-8">
+              {values.experiences.map((exp, index) => (
+                <div
+                  key={exp.id}
+                  className="rounded-lg p-6 space-y-5 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="flex justify-between items-center pb-1">
+                    <div className="flex items-center">
+                      <div className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-medium">
+                        {index + 1}
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        Work Experience
+                      </h3>
+                    </div>
+                    {values.experiences.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          console.log(`Removing Experience ${index + 1}`);
+                          // Dispatch action to remove experience from Redux
+                          dispatch(removeExperienceInfo(exp.id));
+                          // Update Formik state
+                          const newExperiences = values.experiences.filter(
+                            (e) => e.id !== exp.id
+                          );
+                          setFieldValue("experiences", newExperiences);
+                        }}
+                        className="text-primary hover:text-primary flex items-center text-sm font-medium"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        Remove
+                      </button>
+                    )}
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Company Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={exp.companyName}
-                    onChange={(e) =>
-                      handleExperienceChange(
-                        exp.id,
-                        "companyName",
-                        e.target.value
-                      )
-                    }
-                    className={`w-full px-4 py-3 rounded-lg border ${
-                      errors[`${exp.id}-companyName`]
-                        ? "border-primary"
-                        : "border-gray-300"
-                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
-                    required
-                  />
-                  {errors[`${exp.id}-companyName`] && (
-                    <p className="text-primary text-sm mt-1">
-                      {errors[`${exp.id}-companyName`]}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Employment Type *
-                  </label>
-                  <select
-                    value={exp.employmentType}
-                    onChange={(e) =>
-                      handleExperienceChange(
-                        exp.id,
-                        "employmentType",
-                        e.target.value
-                      )
-                    }
-                    className={`w-full px-4 py-3 rounded-lg border ${
-                      errors[`${exp.id}-employmentType`]
-                        ? "border-primary"
-                        : "border-gray-300"
-                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
-                    required
-                  >
-                    <option value="">Select Type</option>
-                    <option value="full-time">Full-time</option>
-                    <option value="part-time">Part-time</option>
-                    <option value="internship">Internship</option>
-                    <option value="contract">Contract</option>
-                    <option value="freelance">Freelance</option>
-                  </select>
-                  {errors[`${exp.id}-employmentType`] && (
-                    <p className="text-primary text-sm mt-1">
-                      {errors[`${exp.id}-employmentType`]}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`currentlyWorking-${exp.id}`}
-                      checked={exp.currentlyWorking}
-                      onChange={(e) =>
-                        handleExperienceChange(
-                          exp.id,
-                          "currentlyWorking",
-                          e.target.checked
-                        )
-                      }
-                      className="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <TextField
+                      name={`experiences.${index}.jobTitle`}
+                      label="Job Title"
+                      placeholder="e.g. Software Engineer"
+                      required
                     />
-                    <label
-                      htmlFor={`currentlyWorking-${exp.id}`}
-                      className="ml-2 text-sm text-gray-700"
-                    >
-                      Currently Working
+                    <TextField
+                      name={`experiences.${index}.companyName`}
+                      label="Company Name"
+                      placeholder="e.g. Google"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Employment Type
+                      </label>
+                      <Field
+                        as="select"
+                        name={`experiences.${index}.employmentType`}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200"
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                          console.log(
+                            `Employment Type Changed for Experience ${
+                              index + 1
+                            }: ${e.target.value}`
+                          );
+                          setFieldValue(
+                            `experiences.${index}.employmentType`,
+                            e.target.value
+                          );
+                        }}
+                      >
+                        <option value="full-time">Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="internship">Internship</option>
+                        <option value="contract">Contract</option>
+                        <option value="freelance">Freelance</option>
+                      </Field>
+                    </div>
+
+                    <div className="flex items-center pt-6">
+                      <Field
+                        type="checkbox"
+                        name={`experiences.${index}.currentlyWorking`}
+                        className="h-5 w-5 text-secondary focus:ring-secondary border-gray-300 rounded"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          console.log(
+                            `Currently Working Changed for Experience ${
+                              index + 1
+                            }: ${e.target.checked}`
+                          );
+                          setFieldValue(
+                            `experiences.${index}.currentlyWorking`,
+                            e.target.checked
+                          );
+                        }}
+                      />
+                      <label className="ml-2 text-sm font-medium text-gray-700">
+                        I currently work here
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <TextField
+                      name={`experiences.${index}.startDate`}
+                      label="Start Date"
+                      type="date"
+                      required
+                    />
+                    <TextField
+                      name={`experiences.${index}.endDate`}
+                      label="End Date"
+                      type="date"
+                      required={!exp.currentlyWorking}
+                      disabled={exp.currentlyWorking}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Responsibilities & Achievements
                     </label>
+                    <Field
+                      as="textarea"
+                      name={`experiences.${index}.responsibilities`}
+                      rows={4}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200"
+                      placeholder="Describe your key responsibilities, accomplishments, and skills used in this role..."
+                    />
                   </div>
                 </div>
-              </div>
+              ))}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={exp.startDate}
-                    onChange={(e) =>
-                      handleExperienceChange(
-                        exp.id,
-                        "startDate",
-                        e.target.value
-                      )
-                    }
-                    className={`w-full px-4 py-3 rounded-lg border ${
-                      errors[`${exp.id}-startDate`]
-                        ? "border-primary"
-                        : "border-gray-300"
-                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
-                    required
-                  />
-                  {errors[`${exp.id}-startDate`] && (
-                    <p className="text-primary text-sm mt-1">
-                      {errors[`${exp.id}-startDate`]}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Date {!exp.currentlyWorking && "*"}
-                  </label>
-                  <input
-                    type="date"
-                    value={exp.endDate}
-                    onChange={(e) =>
-                      handleExperienceChange(exp.id, "endDate", e.target.value)
-                    }
-                    disabled={exp.currentlyWorking}
-                    className={`w-full px-4 py-3 rounded-lg border ${
-                      errors[`${exp.id}-endDate`]
-                        ? "border-primary"
-                        : "border-gray-300"
-                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
-                    required={!exp.currentlyWorking}
-                  />
-                  {errors[`${exp.id}-endDate`] && (
-                    <p className="text-primary text-sm mt-1">
-                      {errors[`${exp.id}-endDate`]}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Responsibilities
-                </label>
-                <textarea
-                  value={exp.responsibilities}
-                  onChange={(e) =>
-                    handleExperienceChange(
-                      exp.id,
-                      "responsibilities",
-                      e.target.value
-                    )
-                  }
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200"
-                  placeholder="Describe your responsibilities and achievements..."
-                />
-              </div>
-
-              {errors[`${exp.id}-dates`] && (
-                <p className="text-primary text-sm mt-1">
-                  {errors[`${exp.id}-dates`]}
-                </p>
-              )}
-            </div>
-          ))}
-
-          <div className="flex justify-between">
-            <div className="flex space-x-4">
               <button
                 type="button"
-                onClick={handlePrevious}
-                className="px-4 py-2 text-secondary border border-secondary rounded-lg hover:bg-secondary hover:text-white transition-all duration-200"
+                onClick={() => {
+                  console.log("Adding new experience");
+                  const newExperience = {
+                    id: Date.now().toString(),
+                    jobTitle: "",
+                    companyName: "",
+                    employmentType: "",
+                    startDate: "",
+                    endDate: "",
+                    currentlyWorking: false,
+                    responsibilities: "",
+                  };
+                  // Dispatch action to add new experience to Redux
+                  dispatch(setExperienceInfo(newExperience));
+                  // Update Formik state
+                  setFieldValue("experiences", [
+                    ...values.experiences,
+                    newExperience,
+                  ]);
+                }}
+                className="flex items-center justify-center w-full py-3 px-4 border-2 border-dashed border-secondary text-secondary rounded-lg hover:bg-secondary hover:text-white transition-all duration-300 font-medium"
               >
-                Previous
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v12m6-6H6"
+                  />
+                </svg>
+                Add Another Work Experience
               </button>
-              <button
-                type="button"
-                onClick={addExperience}
-                className="px-4 py-2 text-secondary border border-secondary rounded-lg hover:bg-secondary hover:text-white transition-all duration-200"
-              >
-                Add Another Experience
-              </button>
-            </div>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-secondary text-white rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all duration-200"
-            >
-              Next
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+              <div className="flex justify-between pt-4 mt-0">
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="px-5 py-2.5 text-secondary border border-secondary rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  Previous
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-secondary text-white rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all duration-200 font-medium flex items-center"
+                >
+                  Next
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </Form>
+          );
+        }}
+      </Formik>
+    </FormContainer>
   );
 };
 

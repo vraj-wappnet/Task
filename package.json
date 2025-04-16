@@ -13,11 +13,14 @@
     "@iconify-icons/mdi": "^1.2.48",
     "@iconify/react": "^5.2.1",
     "@reduxjs/toolkit": "^2.6.1",
+    "formik": "^2.4.6",
+    "framer-motion": "^12.7.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.0",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

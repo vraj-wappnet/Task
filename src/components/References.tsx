@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -7,6 +6,19 @@ import {
   Reference,
 } from "../store/referencesSlice";
 import { RootState, AppDispatch } from "../store/store";
+import { Formik, Form, Field } from "formik";
+import TextField from "./common/TextField";
+import FormContainer from "./FormContainer";
+import {
+  referencesFormSchema,
+  validateEmail,
+  validatePhoneNumber,
+} from "../utils/validationSchemas";
+
+interface FormValues {
+  skipReferences: boolean;
+  references: Reference[];
+}
 
 const References = () => {
   const navigate = useNavigate();
@@ -18,294 +30,273 @@ const References = () => {
     (state: RootState) => state.references.skipReferences
   );
 
-  const [skipReferences, setLocalSkipReferences] = useState(storedSkipStatus);
-  const [references, setLocalReferences] = useState<Reference[]>(
-    storedReferences.length > 0
-      ? storedReferences
-      : [
-          {
-            id: "1",
-            name: "",
-            relationship: "",
-            company: "",
-            contact: "",
-          },
-        ]
-  );
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const initialValues: FormValues = {
+    skipReferences: storedSkipStatus,
+    references:
+      storedReferences.length > 0
+        ? storedReferences
+        : [
+            {
+              id: "1",
+              name: "",
+              relationship: "",
+              company: "",
+              contact: "",
+            },
+          ],
+  };
 
-  // Load saved references from localStorage when component mounts
-  useEffect(() => {
-    const savedReferences = localStorage.getItem("references");
-    const savedSkipStatus = localStorage.getItem("skipReferences");
-    if (savedReferences) {
-      setLocalReferences(JSON.parse(savedReferences));
-    }
-    if (savedSkipStatus) {
-      setLocalSkipReferences(JSON.parse(savedSkipStatus));
-    }
-  }, []);
+  const handleSubmit = (values: FormValues) => {
+    // Log form values before validation
+    console.log("Submitting References Form:", values);
 
-  const handleReferenceChange = (
-    id: string,
-    field: keyof Reference,
-    value: string
-  ) => {
-    setLocalReferences((prev) =>
-      prev.map((ref) => {
-        if (ref.id === id) {
-          return { ...ref, [field]: value };
+    // Validate contact information if references are not skipped
+    const isValid =
+      values.skipReferences ||
+      values.references.every((ref, index) => {
+        const isContactValid =
+          validateEmail(ref.contact) || validatePhoneNumber(ref.contact);
+        if (!isContactValid) {
+          console.error(
+            `Validation Error: Reference ${index + 1} has invalid contact: ${
+              ref.contact
+            }`
+          );
         }
-        return ref;
-      })
-    );
-  };
+        return isContactValid;
+      });
 
-  const addReference = () => {
-    setLocalReferences((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        name: "",
-        relationship: "",
-        company: "",
-        contact: "",
-      },
-    ]);
-  };
+    // Log validation result
+    console.log("Contact Validation Result:", isValid ? "Valid" : "Invalid");
 
-  const removeReference = (id: string) => {
-    if (references.length > 1) {
-      setLocalReferences((prev) => prev.filter((ref) => ref.id !== id));
+    if (isValid) {
+      if (values.skipReferences) {
+        console.log("Skipping references, clearing stored references");
+        dispatch(setSkipReferences(true));
+        dispatch(setReferences([]));
+      } else {
+        console.log("Saving references:", values.references);
+        dispatch(setReferences(values.references));
+        dispatch(setSkipReferences(false));
+      }
+      navigate("/summary");
+      window.scrollTo(0, 0);
+    } else {
+      console.warn("Form submission blocked due to validation errors");
     }
   };
 
   const handlePrevious = () => {
+    console.log("Navigating to previous page: /skills");
     navigate("/skills");
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted");
-
-    if (skipReferences) {
-      console.log("Skipping references");
-      dispatch(setSkipReferences(true));
-      dispatch(setReferences([]));
-      localStorage.setItem("skipReferences", JSON.stringify(true));
-      localStorage.removeItem("references");
-      navigate("/summary");
-      return;
-    }
-
-    // Validate references
-    const newErrors: { [key: string]: string } = {};
-    references.forEach((ref) => {
-      if (!ref.name) newErrors[`${ref.id}-name`] = "Name is required";
-      if (!ref.relationship)
-        newErrors[`${ref.id}-relationship`] = "Relationship is required";
-      if (!ref.company) newErrors[`${ref.id}-company`] = "Company is required";
-      if (!ref.contact) newErrors[`${ref.id}-contact`] = "Contact is required";
-    });
-
-    setErrors(newErrors);
-    console.log("Validation errors:", newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      console.log("No errors, proceeding with submission");
-      dispatch(setReferences(references));
-      dispatch(setSkipReferences(false));
-      localStorage.setItem("references", JSON.stringify(references));
-      localStorage.setItem("skipReferences", JSON.stringify(false));
-      navigate("/summary");
-    }
+    window.scrollTo(0, 0);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center text-secondary">
-          References
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Skip References Checkbox */}
-          <div className="flex items-center mb-6">
-            <input
-              type="checkbox"
-              id="skipReferences"
-              checked={skipReferences}
-              onChange={(e) => setLocalSkipReferences(e.target.checked)}
-              className="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded"
-            />
-            <label
-              htmlFor="skipReferences"
-              className="ml-2 block text-sm text-gray-700"
-            >
-              Skip adding references
-            </label>
-          </div>
+    <FormContainer title="Professional References">
+      <Formik
+        initialValues={initialValues}
+        validationSchema={referencesFormSchema}
+        onSubmit={handleSubmit}
+        validateOnChange={true} // Ensure validation runs on field changes
+        validateOnBlur={true} // Ensure validation runs on field blur
+      >
+        {({ values, setFieldValue, errors, touched }) => {
+          // Log validation errors when they occur
+          if (
+            Object.keys(errors).length > 0 &&
+            Object.keys(touched).length > 0
+          ) {
+            console.log("Validation Errors:", errors);
+          }
 
-          {!skipReferences && (
-            <>
-              {references.map((ref, index) => (
-                <div key={ref.id} className="rounded-lg p-6 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">
-                      Reference {index + 1}
-                    </h3>
-                    {references.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeReference(ref.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
+          return (
+            <Form className="space-y-6">
+              {/* Skip References Checkbox */}
+              <div className="flex items-center mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <Field
+                  type="checkbox"
+                  id="skipReferences"
+                  name="skipReferences"
+                  className="h-5 w-5 text-secondary focus:ring-secondary border-gray-300 rounded cursor-pointer"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    console.log(
+                      "Skip References Checkbox Changed:",
+                      e.target.checked
+                    );
+                    setFieldValue("skipReferences", e.target.checked);
+                    if (e.target.checked) {
+                      console.log("Clearing references due to skip");
+                      setFieldValue("references", []);
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="skipReferences"
+                  className="ml-3 block text-sm font-medium text-gray-700 cursor-pointer"
+                >
+                  Skip adding references for now
+                </label>
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Reference Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={ref.name}
-                        onChange={(e) =>
-                          handleReferenceChange(ref.id, "name", e.target.value)
-                        }
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors[`${ref.id}-name`]
-                            ? "border-primary"
-                            : "border-gray-300"
-                        } focus:ring-2 focus:ring-secondary focus:border-secondary`}
-                        required
-                      />
-                      {errors[`${ref.id}-name`] && (
-                        <p className="text-primary text-sm mt-1">
-                          {errors[`${ref.id}-name`]}
-                        </p>
-                      )}
+              {!values.skipReferences && (
+                <div className="space-y-8">
+                  {values.references.map((ref, index) => (
+                    <div
+                      key={ref.id}
+                      className="rounded-lg p-6 space-y-5 bg-white shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
+                    >
+                      <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          Reference {index + 1}
+                        </h3>
+                        {values.references.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              console.log(`Removing Reference ${index + 1}`);
+                              setFieldValue(
+                                "references",
+                                values.references.filter((r) => r.id !== ref.id)
+                              );
+                            }}
+                            className="text-primary hover:text-primary flex items-center text-sm font-medium"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            Remove
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <TextField
+                          name={`references.${index}.name`}
+                          label="Full Name"
+                          placeholder="Jane Smith"
+                          required
+                        />
+                        <TextField
+                          name={`references.${index}.relationship`}
+                          label="Professional Relationship"
+                          placeholder="Former Manager"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <TextField
+                          name={`references.${index}.company`}
+                          label="Company / Organization"
+                          placeholder="Acme Corporation"
+                          required
+                        />
+                        <TextField
+                          name={`references.${index}.contact`}
+                          label="Contact Information"
+                          placeholder="email@example.com or (555) 123-4567"
+                          required
+                        />
+                      </div>
                     </div>
+                  ))}
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Relationship *
-                      </label>
-                      <input
-                        type="text"
-                        value={ref.relationship}
-                        onChange={(e) =>
-                          handleReferenceChange(
-                            ref.id,
-                            "relationship",
-                            e.target.value
-                          )
-                        }
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors[`${ref.id}-relationship`]
-                            ? "border-primary"
-                            : "border-gray-300"
-                        } focus:ring-2 focus:ring-secondary focus:border-secondary`}
-                        required
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log("Adding new reference");
+                      setFieldValue("references", [
+                        ...values.references,
+                        {
+                          id: Date.now().toString(),
+                          name: "",
+                          relationship: "",
+                          company: "",
+                          contact: "",
+                        },
+                      ]);
+                    }}
+                    className="flex items-center justify-center w-full md:w-auto py-2 px-4 border border-dashed border-secondary text-secondary rounded-lg hover:bg-secondary hover:text-white transition-all duration-300 font-medium"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
                       />
-                      {errors[`${ref.id}-relationship`] && (
-                        <p className="text-primary text-sm mt-1">
-                          {errors[`${ref.id}-relationship`]}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Company *
-                      </label>
-                      <input
-                        type="text"
-                        value={ref.company}
-                        onChange={(e) =>
-                          handleReferenceChange(
-                            ref.id,
-                            "company",
-                            e.target.value
-                          )
-                        }
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors[`${ref.id}-company`]
-                            ? "border-primary"
-                            : "border-gray-300"
-                        } focus:ring-2 focus:ring-secondary focus:border-secondary`}
-                        required
-                      />
-                      {errors[`${ref.id}-company`] && (
-                        <p className="text-primary text-sm mt-1">
-                          {errors[`${ref.id}-company`]}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone/Email *
-                      </label>
-                      <input
-                        type="text"
-                        value={ref.contact}
-                        onChange={(e) =>
-                          handleReferenceChange(
-                            ref.id,
-                            "contact",
-                            e.target.value
-                          )
-                        }
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          errors[`${ref.id}-contact`]
-                            ? "border-primary"
-                            : "border-gray-300"
-                        } focus:ring-2 focus:ring-secondary focus:border-secondary`}
-                        required
-                      />
-                      {errors[`${ref.id}-contact`] && (
-                        <p className="text-primary text-sm mt-1">
-                          {errors[`${ref.id}-contact`]}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                    </svg>
+                    Add Another Reference
+                  </button>
                 </div>
-              ))}
+              )}
 
-              <button
-                type="button"
-                onClick={addReference}
-                className="w-2/8 py-2 px-3 border border-secondary text-white rounded-lg bg-secondary"
-              >
-                Add More References
-              </button>
-            </>
-          )}
-
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={handlePrevious}
-              className="px-4 py-2 text-secondary border border-secondary rounded-lg hover:bg-secondary hover:text-white transition-all duration-200"
-            >
-              Previous
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-secondary text-white rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all duration-200"
-            >
-              Next
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              <div className="flex justify-between pt-6 mt-6">
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="px-5 py-2.5 text-secondary border border-secondary rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium flex items-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  Previous
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-secondary text-white rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all duration-200 font-medium flex items-center"
+                >
+                  Next
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </Form>
+          );
+        }}
+      </Formik>
+    </FormContainer>
   );
 };
 

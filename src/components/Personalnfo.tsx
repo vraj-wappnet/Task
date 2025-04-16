@@ -1,26 +1,11 @@
-import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { type PersonalInfo } from "../store/personalInfoSlice";
 import { setPersonalInfo } from "../store/personalInfoSlice";
 import { RootState } from "../store/store";
-
-interface FormData {
-  fullName: string;
-  email: string;
-  phone: string;
-  dob: string;
-  gender: string;
-  location: string;
-  age: number | null;
-  educationLevel: string;
-}
-
-interface FormErrors {
-  fullName: string;
-  email: string;
-  phone: string;
-  location: string;
-}
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import FormContainer from "./FormContainer";
+import { personalInfoSchema } from "../utils/validationSchemas";
 
 const PersonalInfo = () => {
   const dispatch = useDispatch();
@@ -29,7 +14,7 @@ const PersonalInfo = () => {
     (state: RootState) => state.personalInfo
   );
 
-  const [formData, setFormData] = useState<FormData>({
+  const initialValues: PersonalInfo = {
     fullName: savedPersonalInfo.fullName || "",
     email: savedPersonalInfo.email || "",
     phone: savedPersonalInfo.phone || "",
@@ -38,37 +23,6 @@ const PersonalInfo = () => {
     location: savedPersonalInfo.location || "",
     age: savedPersonalInfo.age || null,
     educationLevel: savedPersonalInfo.educationLevel || "",
-  });
-
-  const [errors, setErrors] = useState<FormErrors>({
-    fullName: "",
-    email: "",
-    phone: "",
-    location: "",
-  });
-
-  // Load data from localStorage on component mount
-  useEffect(() => {
-    const savedData = localStorage.getItem("personalInfo");
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      setFormData(parsedData);
-    }
-  }, []);
-
-  const validateName = (name: string) => {
-    const nameRegex = /^[A-Za-z\s]+$/;
-    return nameRegex.test(name);
-  };
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+\d{1,3}\s?\d{6,14}$/;
-    return phoneRegex.test(phone);
   };
 
   const calculateAge = (dob: string) => {
@@ -87,245 +41,328 @@ const PersonalInfo = () => {
     return age;
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleSubmit = (values: PersonalInfo) => {
+    const age = calculateAge(values.dob);
+    const formDataWithAge = { ...values, age };
 
-    if (name === "fullName") {
-      setErrors((prev) => ({
-        ...prev,
-        fullName: validateName(value)
-          ? ""
-          : "Name should contain only letters and spaces",
-      }));
-    } else if (name === "email") {
-      setErrors((prev) => ({
-        ...prev,
-        email: validateEmail(value) ? "" : "Please enter a valid email address",
-      }));
-    } else if (name === "phone") {
-      setErrors((prev) => ({
-        ...prev,
-        phone: validatePhone(value)
-          ? ""
-          : "Please enter a valid international phone number (e.g., +91 1234567890)",
-      }));
-    }
-
-    if (name === "dob") {
-      const age = calculateAge(value);
-      setFormData((prev) => ({ ...prev, age }));
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate all fields
-    const newErrors: FormErrors = {
-      fullName: validateName(formData.fullName)
-        ? ""
-        : "Name should contain only letters and spaces",
-      email: validateEmail(formData.email)
-        ? ""
-        : "Please enter a valid email address",
-      phone: validatePhone(formData.phone)
-        ? ""
-        : "Please enter a valid international phone number",
-      location: "",
-    };
-
-    setErrors(newErrors);
-
-    if (Object.values(newErrors).every((error) => !error)) {
-      // Save to Redux
-      dispatch(setPersonalInfo(formData));
-
-      localStorage.setItem("personalInfo", JSON.stringify(formData));
-
-      navigate("/experience");
-    }
+    // Save to Redux
+    dispatch(setPersonalInfo(formDataWithAge));
+    navigate("/experience");
+    window.scrollTo(0, 0);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center text-secondary">
-          Personal Information
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Full Name *
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.fullName ? "border-primary" : " "
-                } focus:ring-1 focus:ring-secondary focus:border-secondary     `}
-                required
-                placeholder="John Doe"
-              />
-              {errors.fullName && (
-                <p className="text-primary text-sm mt-1">{errors.fullName}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email *
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.email ? "border-primary" : " "
-                } focus:ring-1 focus:ring-secondary focus:border-secondary     `}
-                required
-                placeholder="you@example.com"
-              />
-              {errors.email && (
-                <p className="text-primary text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
-          </div>
+    <FormContainer title="Personal Information">
+      <Formik
+        initialValues={initialValues}
+        validationSchema={personalInfoSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ errors, touched }) => (
+          <Form>
+            <div className="bg-white shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg p-6 space-y-6">
+              <div className="flex items-center pb-2 mb-2">
+                <div className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-medium">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Basic Details
+                </h3>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700 mb-1"
-                aria-label="phone"
-              >
-                Phone Number *
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.phone ? "border-primary" : " "
-                } focus:ring-1 focus:ring-secondary focus:border-secondary     `}
-                required
-                placeholder="+91 1234567890"
-              />
-              {errors.phone && (
-                <p className="text-primary text-sm mt-1">{errors.phone}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="dob"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Date of Birth
-              </label>
-              <input
-                type="date"
-                id="dob"
-                name="dob"
-                value={formData.dob}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border  focus:ring-1 focus:ring-secondary focus:border-secondary"
-              />
-              {formData.age !== null && (
-                <p className="text-sm text-gray-600 mt-2">
-                  Age: {formData.age} years
-                </p>
-              )}
-            </div>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label
+                    htmlFor="fullName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Full Name
+                  </label>
+                  <Field
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    className={`w-full px-4 py-3 rounded-lg border ${
+                      errors.fullName && touched.fullName
+                        ? "border-primary bg-red-50"
+                        : "border-gray-300"
+                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
+                    placeholder="John Doe"
+                  />
+                  <ErrorMessage
+                    name="fullName"
+                    component="p"
+                    className="text-primary text-sm mt-1"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Email
+                  </label>
+                  <Field
+                    type="email"
+                    id="email"
+                    name="email"
+                    className={`w-full px-4 py-3 rounded-lg border ${
+                      errors.email && touched.email
+                        ? "border-primary bg-red-50"
+                        : "border-gray-300"
+                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
+                    placeholder="you@example.com"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="p"
+                    className="text-primary text-sm mt-1"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="gender"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Gender
-              </label>
-              <select
-                id="gender"
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border   focus:ring-1 focus:ring-secondary focus:border-secondary     "
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-                <option value="prefer-not-to-say">Prefer not to say</option>
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="location"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Current Location
-              </label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border focus:ring-1 focus:ring-secondary focus:border-secondary     "
-                placeholder="New York, USA"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Field
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      className={`w-full px-4 py-3 rounded-lg border ${
+                        errors.phone && touched.phone
+                          ? "border-primary bg-red-50"
+                          : "border-gray-300"
+                      } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200`}
+                      placeholder="+91 1234567890"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`h-5 w-5 ${
+                          errors.phone && touched.phone
+                            ? "text-primary"
+                            : "text-gray-400"
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <ErrorMessage
+                    name="phone"
+                    component="p"
+                    className="text-primary text-sm mt-1"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="dob"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Date of Birth
+                  </label>
+                  <div className="relative">
+                    <Field
+                      type="date"
+                      id="dob"
+                      name="dob"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          <div>
-            <label
-              htmlFor="educationLevel"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Education Level *
-            </label>
-            <select
-              id="educationLevel"
-              name="educationLevel"
-              value={formData.educationLevel}
-              onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border focus:ring-1 focus:ring-secondary focus:border-secondary"
-              required
-            >
-              <option value="">Select Education Level</option>
-              <option value="high-school">High School</option>
-              <option value="diploma">Diploma</option>
-              <option value="bachelors">Bachelor's Degree</option>
-              <option value="graduate">Graduate</option>
-            </select>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label
+                    htmlFor="gender"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Gender
+                  </label>
+                  <div className="relative">
+                    <Field
+                      as="select"
+                      id="gender"
+                      name="gender"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200 appearance-none"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                      <option value="prefer-not-to-say">
+                        Prefer not to say
+                      </option>
+                    </Field>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Current Location
+                  </label>
+                  <div className="relative">
+                    <Field
+                      type="text"
+                      id="location"
+                      name="location"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200"
+                      placeholder="New York, USA"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          <button
-            type="submit"
-            className="bg-secondary w-full text-white py-3 px-4 rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2      font-medium"
-          >
-            Next
-          </button>
-        </form>
-      </div>
-    </div>
+              <div>
+                <label
+                  htmlFor="educationLevel"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Education Level
+                </label>
+                <div className="relative">
+                  <Field
+                    as="select"
+                    id="educationLevel"
+                    name="educationLevel"
+                    className={`w-full px-4 py-3 rounded-lg border ${
+                      errors.educationLevel && touched.educationLevel
+                        ? "border-primary bg-red-50"
+                        : "border-gray-300"
+                    } focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200 appearance-none`}
+                  >
+                    <option value="">Select Education Level</option>
+                    <option value="high-school">High School</option>
+                    <option value="diploma">Diploma</option>
+                    <option value="bachelors">Bachelor's Degree</option>
+                    <option value="graduate">Graduate</option>
+                  </Field>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <ErrorMessage
+                  name="educationLevel"
+                  component="p"
+                  className="text-primary text-sm mt-1"
+                />
+              </div>
+
+              <div className="mt-8">
+                <button
+                  type="submit"
+                  className="bg-secondary w-full text-white py-3 px-4 rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 font-medium flex items-center justify-center transition-all duration-200"
+                >
+                  Continue to Work Experience
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </FormContainer>
   );
 };
 

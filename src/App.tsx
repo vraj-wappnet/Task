@@ -7,19 +7,22 @@ import Education from "./components/Education";
 import Skills from "./components/Skills";
 import References from "./components/References";
 import Summary from "./components/Summary";
+import FormLayout from "./components/FormLayout";
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
-        <Routes>
-          <Route path="/" element={<PersonalInfo />} />
-          <Route path="/experience" element={<Experience />} />
-          <Route path="/education" element={<Education />} />
-          <Route path="/skills" element={<Skills />} />
-          <Route path="/references" element={<References />} />
-          <Route path="/summary" element={<Summary />} />
-        </Routes>
+        <FormLayout>
+          <Routes>
+            <Route path="/" element={<PersonalInfo />} />
+            <Route path="/experience" element={<Experience />} />
+            <Route path="/education" element={<Education />} />
+            <Route path="/skills" element={<Skills />} />
+            <Route path="/references" element={<References />} />
+            <Route path="/summary" element={<Summary />} />
+          </Routes>
+        </FormLayout>
       </Router>
     </Provider>
   );
