@@ -127,10 +127,6 @@ const Experience = () => {
           ) {
             console.log("Validation Errors:", errors);
           }
-          // Log touched fields to debug interaction
-          if (Object.keys(touched).length > 0) {
-            console.log("Touched Fields:", touched);
-          }
 
           return (
             <Form className="space-y-8">

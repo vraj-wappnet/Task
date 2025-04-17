@@ -44,7 +44,6 @@ const FormStepper = () => {
   const handleStepClick = (path: string, index: number) => {
     // Allow navigation only to completed or current steps
     if (index <= currentStepIndex) {
-      console.log(`Navigating to step: ${steps[index].label} (${path})`);
       navigate(path);
     } else {
       console.log(`Cannot navigate to future step: ${steps[index].label}`);
